@@ -1,6 +1,6 @@
 class Room():
-    def __init__(self, roomID):
+    def __init__(self, roomID, neighbors, text):
         self.roomID = roomID
-        self.neighbors = [0, 0, 0, 0]
+        self.neighbors = neighbors
         self.items = []
-        self.text = ""
+        self.text = text

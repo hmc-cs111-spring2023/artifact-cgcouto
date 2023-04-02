@@ -1,0 +1,11 @@
+<rooms> {
+    <start>(treasure is north, cave is south) {
+        You find yourself in a dark room. A door leads to the north, while a cave opens to the south.
+    }
+    <cave>(start is north) {
+        You've arrived in a dingy cave. You can go north to return to the starting room.
+    }
+    <treasure>() {
+        Wow, there's a treasure chest in here! You can't open it though. The starting room resides to the south.
+    }
+}
