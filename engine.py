@@ -1,11 +1,12 @@
-from room import Room
-
 class Engine():
     def __init__(self, rooms, items):
-        self.rooms = rooms
-        self.items = items
+        self.rooms = rooms # Currently works
+        self.items = items # To-do for week 2!
         self.inventory = [False]*len(items)
 
+    # Update the current room provided it's a supported direction to navigate to
+    # currentRoom (int) : id of the current room 
+    # dir (string) : hopefully a NSEW direction, but maybe not
     def navigate(self, currentRoom, dir):
         compass = ["north", "south", "east", "west"]
         if dir in compass:
@@ -19,19 +20,24 @@ class Engine():
 
         return currentRoom
     
+    # Prints out a list of supported commands
+    # input (string) : optional, if the user specifies a specific command to get help with
     def help_user(self, input):
-        print("yes")
+        print("yes") # Need to do this still
 
 
-
+    # Run the core game loop!
     def run(self):
-        currentRoom = 0
+        currentRoom = 0 # Start in the first room in the array
         while True:
-            # ask for input, parse it and do stuff accordingly
+            # Ask for input, parse it and change state accordingly
+
+            # Print current room's flavor text
             print(self.rooms[currentRoom].text)
 
             user_input = str(input()).split(' ')
 
+            # Supported commands (so far)
             if user_input[0] == "help":
                 self.help_user(user_input)
             elif user_input[0]  == "exit" or user_input[0] == "quit":

@@ -6,6 +6,6 @@
         You've arrived in a dingy cave. You can go north to return to the starting room.
     }
     <treasure>() {
-        Wow, there's a treasure chest in here! You can't open it though. The starting room resides to the south.
+        Wow, there's a treasure chest in here! You can't open it though (at least not yet). The starting room resides to the south.
     }
 }
