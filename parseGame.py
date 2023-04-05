@@ -11,12 +11,11 @@ def parse_data(filename):
     LPAREN, RPAREN = map(Literal, "()")
 
     # The various pieces that go into my DSL
-    rooms_start = Suppress('<' + 'rooms' + '>' + LBRACKET)
     neighbor = Combine(Word(alphas) + ' is ' + one_of(['north', 'south', 'east', 'west'])) + Suppress(ZeroOrMore(','))
     room = Combine('<' + Word(alphanums) + '>') + Suppress(LPAREN) + ZeroOrMore(neighbor) + Suppress(RPAREN + LBRACKET) + SkipTo(RBRACKET) + Suppress(RBRACKET)
-
+    
     # Combining the pieces together
-    game = rooms_start + OneOrMore(room) + Suppress(RBRACKET)
+    game = OneOrMore(room)
 
     # Should be ordered [room_name, direction(s), room_text, ...]
     parsed_data = game.parse_file(filename)
@@ -101,6 +100,8 @@ def main():
         print("Too many arguments! Please only provide a file name when you run this function.")
         exit(-1)
 
+    # TODO: 
+    # Add support for passing in multiple .game files to be compiled into a complete game
     parsed_data = parse_data(args[0])
 
     split_data = split_into_rooms(parsed_data)

@@ -5,3 +5,4 @@ class Room():
         self.neighbors = neighbors
         self.items = []
         self.text = text
+        self.blocked = False

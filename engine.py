@@ -2,6 +2,7 @@ class Engine():
     def __init__(self, rooms, items):
         self.rooms = rooms # Currently works
         self.items = items # To-do for week 2!
+        self.characters = []
         self.inventory = [False]*len(items)
 
     # Update the current room provided it's a supported direction to navigate to
@@ -20,10 +21,13 @@ class Engine():
 
         return currentRoom
     
+    def askabout(self, character, thing):
+        print(thing)
+    
     # Prints out a list of supported commands
     # input (string) : optional, if the user specifies a specific command to get help with
     def help_user(self, input):
-        print("yes") # Need to do this still
+        print("no") # Need to do this still
 
 
     # Run the core game loop!
@@ -43,8 +47,10 @@ class Engine():
             elif user_input[0]  == "exit" or user_input[0] == "quit":
                 break
             elif user_input[0] == "go":
-                print("[" + user_input[1] + "]")
+                # print("[" + user_input[1] + "]")
                 currentRoom = self.navigate(currentRoom, user_input[1])
+            elif user_input[0] == "ask" and user_input[2] == "about":
+                self.askabout(user_input[1], user_input[3])
             else:
                 print("I don't understand what you're saying.")
 
