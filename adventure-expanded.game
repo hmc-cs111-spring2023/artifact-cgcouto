@@ -20,9 +20,9 @@
     }
 
     <beggar>(character, gives apple) {
-        apple: 
-        bucket: 
-        door: 
+        apple: Some text
+        bucket: Some more text
+        door: Even more text
     }
 }
 

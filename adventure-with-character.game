@@ -1,0 +1,21 @@
+<dark>(treasure is north, cave is south, win is west) {
+    You find yourself in a dark room. A door leads to the north, while a cave opens to the south. A mysterious locked door also lies to the west. There's a beggar in the corner with a bucket of apples (maybe ask them about it?)
+    <beggar>(character) {
+        apple: Yes, those are my apples.
+        apples: Yes, those are my apples.
+        bucket: Do you like my bucket?
+        door: Go through that door if you dare
+    }
+}
+
+<cave>(dark is north) {
+    You've arrived in a dingy cave. You can go north to return to the starting room.
+}
+
+<treasure>() {
+    Wow, there's a treasure chest in here! You can't open it though (at least not yet). The starting room resides to the south.
+}
+
+<win>() {
+    Congratulations! You have escaped the dungeon and won the game.
+}

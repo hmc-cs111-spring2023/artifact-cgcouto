@@ -1,6 +1,6 @@
 class Character:
-    def __init__(self):
-        self.responseDict = {}
+    def __init__(self, responseDict):
+        self.responseDict = responseDict
         self.otherResponse = "Sorry, I don't understand."
         self.hasItems = []
 

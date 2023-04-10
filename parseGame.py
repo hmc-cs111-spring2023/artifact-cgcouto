@@ -1,6 +1,7 @@
 from pyparsing import *
 from room import Room
 from engine import Engine
+from character import Character
 import sys
 
 # Parse the file into an array with the most important elements!
@@ -12,8 +13,10 @@ def parse_data(filename):
 
     # The various pieces that go into my DSL
     neighbor = Combine(Word(alphas) + ' is ' + one_of(['north', 'south', 'east', 'west'])) + Suppress(ZeroOrMore(','))
-    room = Combine('<' + Word(alphanums) + '>') + Suppress(LPAREN) + ZeroOrMore(neighbor) + Suppress(RPAREN + LBRACKET) + SkipTo(RBRACKET) + Suppress(RBRACKET)
-    
+    phrase = Group(Word(alphas) + Suppress(":") + restOfLine)
+    text = restOfLine
+    character = (Combine('<' + Word(alphanums) + '>') + Suppress(LPAREN) + 'character' + Suppress(RPAREN + LBRACKET) + OneOrMore(phrase) + Suppress(RBRACKET))
+    room = Combine('<' + Word(alphanums) + '>') + Suppress(LPAREN) + ZeroOrMore(neighbor) + Suppress(RPAREN + LBRACKET) + SkipTo("\n") + ZeroOrMore(character) + Suppress(RBRACKET)
     # Combining the pieces together
     game = OneOrMore(room)
 
@@ -81,12 +84,32 @@ def verify_game_map(rooms_data):
 
     return text_and_neighbors
 
+# Given parsed character info, build dictionaries for dialogue, return that along with room id, character key
+def create_character_dict(character_list):
+    character_dict = {}
+
+    for i in range(2, len(character_list[1])):
+        character_dict[character_list[1][i][0]] = character_list[1][i][1]
+        
+    return [character_list[0], character_list[1][0].replace("<", "").replace(">",""), character_dict]
+
+
 # Create room objects, pass into Engine and run the game!
 # rooms_text_and_neighbors ([[string, [int]]]) : list from verify_game_map
-def run_game(rooms_text_and_neighbors):
+def run_game(rooms_text_and_neighbors, characters_info):
 
-    rooms = [Room(i, rooms_text_and_neighbors[i][1], rooms_text_and_neighbors[i][0]) for i in range(len(rooms_text_and_neighbors))]
-    game = Engine(rooms, [])
+    characters = [Character(character[2]) for character in characters_info]
+    character_dicts = [{} for i in range(len(rooms_text_and_neighbors))]
+
+    print(len(characters_info))
+
+    for i in range(len(characters_info)):
+        character_dicts[characters_info[i][0]][characters_info[i][1]] = characters[i]
+
+    print(character_dicts)
+    rooms = [Room(i, rooms_text_and_neighbors[i][1], character_dicts[i], rooms_text_and_neighbors[i][0]) for i in range(len(rooms_text_and_neighbors))]
+
+    game = Engine(rooms, [], characters)
     game.run()
 
 
@@ -106,9 +129,26 @@ def main():
 
     split_data = split_into_rooms(parsed_data)
 
+    # Pull out the characters in our parsed data
+    characters = []
+    for i in range(len(split_data)):
+        if split_data[i][1] == 'character':
+            characters.append([i-1, split_data[i]])
+    
+    # Leave only the room data in split_data
+    for character in characters:
+        split_data.remove(character[1])
+
+    # Make sure the room navigation logic makes sense, get final data out
     rooms_text_and_neighbors = verify_game_map(split_data)
 
-    run_game(rooms_text_and_neighbors)
+    # Build character dialogue dictionaries, get final data out
+    character_room_and_dialogue = []
+    for character in characters:
+        character_room_and_dialogue.append(create_character_dict(character))
+
+    # Run the game!
+    run_game(rooms_text_and_neighbors, character_room_and_dialogue)
 
 if __name__ == "__main__":
     main()
