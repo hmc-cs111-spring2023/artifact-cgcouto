@@ -2,6 +2,7 @@ from pyparsing import *
 from room import Room
 from engine import Engine
 from character import Character
+from item import Item
 import sys
 
 # Parse the file into an array with the most important elements!
@@ -14,9 +15,12 @@ def parse_data(filename):
     # The various pieces that go into my DSL
     neighbor = Combine(Word(alphas) + ' is ' + one_of(['north', 'south', 'east', 'west'])) + Suppress(ZeroOrMore(','))
     phrase = Group(Word(alphas) + Suppress(":") + restOfLine)
-    text = restOfLine
+    look = Group("look" + Suppress(":") + restOfLine)
+    pickup = Group("pickup" + Suppress(":") + restOfLine)
+    use = Group("use" + Suppress(":") + restOfLine)    
     character = (Combine('<' + Word(alphanums) + '>') + Suppress(LPAREN) + 'character' + Suppress(RPAREN + LBRACKET) + OneOrMore(phrase) + Suppress(RBRACKET))
-    room = Combine('<' + Word(alphanums) + '>') + Suppress(LPAREN) + ZeroOrMore(neighbor) + Suppress(RPAREN + LBRACKET) + SkipTo("\n") + ZeroOrMore(character) + Suppress(RBRACKET)
+    item = Combine('<' + Word(alphanums) + '>') + Suppress(LPAREN) + 'item' + Optional(Suppress(',')) + Optional('grabbable' + Optional(Suppress(','))) + Optional(Group('contains' + Word(alphas) + Optional(Suppress(',')))) + Optional(Group('opens' + Word(alphas) + Optional(Suppress(',')))) + Suppress(RPAREN + LBRACKET) + Optional(look) + Optional(pickup) + Optional(use) + Suppress(RBRACKET)
+    room = Combine('<' + Word(alphanums) + '>') + Suppress(LPAREN) + ZeroOrMore(neighbor) + Suppress(RPAREN + LBRACKET) + SkipTo("\n") + ZeroOrMore(character) + ZeroOrMore(item) + Suppress(RBRACKET)
     # Combining the pieces together
     game = OneOrMore(room)
 
@@ -75,6 +79,7 @@ def verify_game_map(rooms_data):
             # TODO:
             # Need to check that we're either overwriting a None or the number we're adding
             # is the same as what's already there (otherwise something is wrong with the room logic)
+            # Also need to check that we're not adding directions to rooms that don't exist
 
             text_and_neighbors[current_room_id][1][current_direction_index] = next_room_id
             text_and_neighbors[next_room_id][1][next_direction_index] = current_room_id
@@ -93,23 +98,56 @@ def create_character_dict(character_list):
         
     return [character_list[0], character_list[1][0].replace("<", "").replace(">",""), character_dict]
 
+def preprocess_item_info(item_list):
+    item = item_list[1]
+
+    # Go through each item and pull out room ID, grabbable or not, contains item or not, look/pickup/use text
+        
+    grabBool = bool('grabbable' in item)
+
+    inner_lists = [p for p in item if type(p) == list]
+
+    opens_list = []
+    contains_list = []
+    text_list = ["", "", ""]
+
+    for lst in inner_lists:
+        if lst[0] == "opens":
+            opens_list.append(lst[1])
+        elif lst[0] == "contains":
+            contains_list.append(lst[1])
+        elif lst[0] == "look":
+            text_list[0] = lst[1]
+        elif lst[0] == "pickup":
+            text_list[1] = lst[1]
+        elif lst[0] == "use":
+            text_list[2] = lst[1]
+
+
+    item_details = [item_list[0], item[0].replace("<", "").replace(">",""),  text_list, grabBool, opens_list, contains_list]  # start with room id and item name
+
+    return item_details
+
 
 # Create room objects, pass into Engine and run the game!
 # rooms_text_and_neighbors ([[string, [int]]]) : list from verify_game_map
-def run_game(rooms_text_and_neighbors, characters_info):
+def run_game(rooms_text_and_neighbors, characters_info, items_info):
 
     characters = [Character(character[2]) for character in characters_info]
     character_dicts = [{} for i in range(len(rooms_text_and_neighbors))]
 
-    print(len(characters_info))
-
     for i in range(len(characters_info)):
         character_dicts[characters_info[i][0]][characters_info[i][1]] = characters[i]
 
-    print(character_dicts)
-    rooms = [Room(i, rooms_text_and_neighbors[i][1], character_dicts[i], rooms_text_and_neighbors[i][0]) for i in range(len(rooms_text_and_neighbors))]
+    items = [Item(item[1], item[2][0], item[2][1], item[2][2], item[3], item[4], item[5]) for item in items_info]
+    item_dicts = [{} for i in range(len(rooms_text_and_neighbors))]
 
-    game = Engine(rooms, [], characters)
+    for j in range(len(items_info)):
+        item_dicts[items_info[j][0]][items_info[j][1]] = items[j]
+
+    rooms = [Room(i, rooms_text_and_neighbors[i][1], character_dicts[i], item_dicts[i], rooms_text_and_neighbors[i][0]) for i in range(len(rooms_text_and_neighbors))]
+
+    game = Engine(rooms, items, characters)
     game.run()
 
 
@@ -117,27 +155,35 @@ def main():
 
     args = sys.argv[1:]
     if len(args) == 0:
-        print("Please provide a file name when you run this function.")
-        exit(-1)
-    elif len(args) > 1:
-        print("Too many arguments! Please only provide a file name when you run this function.")
+        print("Please provide at least one file name when you run this function.")
         exit(-1)
 
-    # TODO: 
-    # Add support for passing in multiple .game files to be compiled into a complete game
-    parsed_data = parse_data(args[0])
+    parsed_data = []
+    for file in args:
+        parsed_data.append(parse_data(file).asList())
+
+    # If we have multiple files that we've pulled from, need to flatten our data list 
+    parsed_data = [data for sublist in parsed_data for data in sublist]
 
     split_data = split_into_rooms(parsed_data)
 
-    # Pull out the characters in our parsed data
+    # Pull out the characters and items in our parsed data
     characters = []
+    items = []
+    lastRoom = -1
     for i in range(len(split_data)):
         if split_data[i][1] == 'character':
-            characters.append([i-1, split_data[i]])
+            characters.append([lastRoom, split_data[i]])
+        elif split_data[i][1] == 'item':
+            items.append([lastRoom, split_data[i]])
+        else:
+            lastRoom += 1
     
     # Leave only the room data in split_data
     for character in characters:
         split_data.remove(character[1])
+    for item in items:
+        split_data.remove(item[1])
 
     # Make sure the room navigation logic makes sense, get final data out
     rooms_text_and_neighbors = verify_game_map(split_data)
@@ -147,8 +193,15 @@ def main():
     for character in characters:
         character_room_and_dialogue.append(create_character_dict(character))
 
+    # Build item name dictionaries for each room, get final data out
+    item_room_and_info = []
+    for item in items:
+        item_room_and_info.append(preprocess_item_info(item))
+
+    print(item_room_and_info)
+
     # Run the game!
-    run_game(rooms_text_and_neighbors, character_room_and_dialogue)
+    run_game(rooms_text_and_neighbors, character_room_and_dialogue, item_room_and_info)
 
 if __name__ == "__main__":
     main()

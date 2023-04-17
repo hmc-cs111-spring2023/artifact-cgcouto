@@ -1,9 +1,9 @@
 class Engine():
     def __init__(self, rooms, items, characters):
-        self.rooms = rooms # Currently works
+        self.rooms = rooms
         self.items = items 
         self.characters = characters
-        self.inventory = [False]*len(items)
+        self.inventory = []
 
     # Update the current room provided it's a supported direction to navigate to
     # currentRoom (int) : id of the current room 
@@ -32,12 +32,42 @@ class Engine():
         else:
             # We didn't get a hit on the character, so print generic confusion text
             print("I don't know who you're trying to talk to.")
+
+    def takeItem(self, currentRoom, item):
+        if item in self.rooms[currentRoom].items:
+            result = self.rooms[currentRoom].items[item].onTake()
+            if type(result) == str:
+                self.inventory.append(result)
+
+    def useOn(self, currentRoom, heldItem, object):
+        if heldItem in self.inventory and object in self.rooms[currentRoom].items:
+            self.rooms[currentRoom].items[object].onUse()
+            self.inventory.remove(heldItem)
+
+    def lookAt(self, currentRoom, object):
+        if object in self.rooms[currentRoom].items:
+            self.rooms[currentRoom].items[object].onLook()
+
+
+    def printInventory(self):
+        print("inventory")
+
         
     
     # Prints out a list of supported commands
     # input (string) : optional, if the user specifies a specific command to get help with
     def help_user(self, input):
-        print("no") # Need to do this still
+        print("")
+        print("SUPPORTED COMMANDS")
+        print("~~~~~~~~~~~~~~~~~~")
+        print("go X : where X is a cardinal direction")
+        print("ask X about Y : where X is a character, Y is an character or object")
+        print("take X : where X is an object")
+        print("user X on Y : where X is an object in your inventory and Y is another object")
+        print("look at X : where X is a character or object")
+        print("inventory : returns contents of player inventory")
+        print("exit/quit : quit the game")
+        print("")
 
 
     # Run the core game loop!
@@ -60,6 +90,14 @@ class Engine():
                 currentRoom = self.navigate(currentRoom, user_input[1])
             elif user_input[0] == "ask" and user_input[2] == "about":
                 self.askabout(currentRoom, user_input[1], user_input[3])
+            elif user_input[0] == "take":
+                self.takeItem(currentRoom, user_input[1])
+            elif user_input[0] == "use" and user_input[2] == "on":
+                self.useOn(currentRoom, user_input[1], user_input[3])
+            elif user_input[0] == "look" and user_input[1] == "at":
+                self.lookAt(currentRoom, user_input[2])
+            elif user_input[0] == "inventory":
+                self.printInventory()
             else:
                 print("I don't understand what you're saying.")
 
