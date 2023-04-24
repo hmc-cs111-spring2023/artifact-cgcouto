@@ -10,6 +10,7 @@ class Item:
         self.contains = contains
         self.opens = opens
         self.status = "test"
+        self.ASCII = ""
 
     def onLook(self):
         print(self.lookText)

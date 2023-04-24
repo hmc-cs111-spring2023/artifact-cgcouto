@@ -1,4 +1,4 @@
-<dark>(treasure is north, cave is south) {
+<dark>(start, treasure is north, cave is south) {
     You find yourself in a dark room. A door leads to the north, while a cave opens to the south. A mysterious locked door also lies to the west.
 
     <beggar>(character) {

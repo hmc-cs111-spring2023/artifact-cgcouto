@@ -7,3 +7,5 @@ class Room():
         self.characters = characters
         self.text = text
         self.blocked = False
+        self.opensWith = []
+        self.ASCII = ""
