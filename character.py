@@ -7,9 +7,6 @@ class Character:
 
     def askAbout(self, thing):
         if thing in self.responseDict:
-            print(self.responseDict[thing])
+            print(self.responseDict[thing] + "\n")
         else:
-            print(self.otherResponse)
-            
-    def giveItem(self, thing):
-        print("yes")
+            print(self.otherResponse + "\n")

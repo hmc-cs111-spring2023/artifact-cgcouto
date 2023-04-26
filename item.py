@@ -1,7 +1,7 @@
 
 class Item:
-    # This will be expanded upon as we get into week 2 of the project!
-    def __init__(self, name, look, pickup, use, grabBool, opens, contains):
+
+    def __init__(self, name, look, pickup, use, grabBool, opens, contains, image):
         self.name = name
         self.lookText = look
         self.grabbable = grabBool
@@ -10,20 +10,23 @@ class Item:
         self.contains = contains
         self.opens = opens
         self.status = "test"
-        self.ASCII = ""
+        self.image = image
 
     def onLook(self):
-        print(self.lookText)
+        if self.image != "":
+            print(open(self.image).read())
+            print("")
+        else:
+            print("miss")
+        print(self.lookText + "\n")
 
-    def onInspect(self):
-        print(self.lookText)
 
     def onTake(self):
         if self.grabbable:
-            print(self.takeText)
+            print(self.takeText + "\n")
             return self.name
         else:
-            print("You cannot pick that up.")
+            print("You cannot pick that up." + "\n")
 
     
     def onUse(self):

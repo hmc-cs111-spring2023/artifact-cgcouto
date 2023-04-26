@@ -17,12 +17,13 @@ def parse_data(filename):
     phrase = Group(Word(alphas) + Suppress(":") + restOfLine)
     look = Group("look" + Suppress(":") + restOfLine)
     pickup = Group("pickup" + Suppress(":") + restOfLine)
-    use = Group("use" + Suppress(":") + restOfLine)    
+    use = Group("use" + Suppress(":") + restOfLine)
+    image = Group('image' + Suppress('is') + Combine(Word(alphanums) + '.' + Word(alphanums)) + Optional(Suppress(',')))
     character = (Combine('<' + Word(alphanums) + '>') + Suppress(LPAREN) + 'character' + Suppress(RPAREN + LBRACKET) + OneOrMore(phrase) + Suppress(RBRACKET))
-    item = Combine('<' + Word(alphanums) + '>') + Suppress(LPAREN) + 'item' + Optional(Suppress(',')) + Optional('grabbable' + Optional(Suppress(','))) + Optional(Group('contains' + Word(alphas) + Optional(Suppress(',')))) + Optional(Group('opens' + Word(alphas) + Optional(Suppress(',')))) + Suppress(RPAREN + LBRACKET) + Optional(look) + Optional(pickup) + Optional(use) + Suppress(RBRACKET)
-    room = Combine('<' + Word(alphanums) + '>') + Suppress(LPAREN) + Optional("start" + Suppress(",")) + ZeroOrMore(neighbor) + Suppress(RPAREN + LBRACKET) + SkipTo("\n") + ZeroOrMore(character) + ZeroOrMore(item) + Suppress(RBRACKET)
-    
-    # Have options for changing things like 
+    contains = Group('contains' + Word(alphas) + Optional(Suppress(',')))
+    opens = Group('opens' + Word(alphas) + Optional(Suppress(',')))
+    item = Combine('<' + Word(alphanums) + '>') + Suppress(LPAREN) + 'item' + Optional(Suppress(',')) + Optional('grabbable' + Optional(Suppress(','))) + Optional(contains) + Optional(opens) + Optional(image) + Suppress(RPAREN + LBRACKET) + Optional(look) + Optional(pickup) + Optional(use) + Suppress(RBRACKET)
+    room = (Combine('<' + Word(alphanums) + '>') + Suppress(LPAREN) + Optional("start" + Suppress(",")) + ZeroOrMore(neighbor) + Optional(image) + Suppress(RPAREN + LBRACKET) + SkipTo("\n") + ZeroOrMore(character) + ZeroOrMore(item) + Suppress(RBRACKET))
 
     # Combining the pieces together
     game = OneOrMore(room)
@@ -61,11 +62,27 @@ def verify_game_map(rooms_data):
     for i in range(len(rooms_data)):
         room_names_to_ids[rooms_data[i][0][1:len(rooms_data[i][0])-1]] = i
 
+    # Find image data if it exists and pull it out of rooms_data
+    images_list = [""]*len(rooms_data)
+
+    # print(len(rooms_data[1]))
+    # print(rooms_data[1][3])
+
+    for n in range(len(rooms_data)):
+        for m in range(len(rooms_data[n])-1):
+            print(m)
+            print(rooms_data[n][m])
+            if type(rooms_data[n][m]) == list:
+                if rooms_data[n][m][0] == 'image':
+                    images_list[n] = rooms_data[n][m][1]
+                    del rooms_data[n][m]
+
+
     # Pull out only the directional info (ex. treasure is south)
     room_directions = [room[1:len(room)-1] for room in rooms_data]
 
     # We'll be returning the print text and the neighbors array to be used in Engine
-    text_and_neighbors = [["", [None, None, None, None]] for i in range(len(rooms_data))]
+    text_and_neighbors = [["", [None, None, None, None], ""] for i in range(len(rooms_data))]
 
     compass = ['north', 'south', 'east', 'west'] # Different directions
     pairedInds = [1, 0, 3, 2] # Indices of the opposite direction in compass (ex. 1 at index 0 signifies opposite of north is south)
@@ -89,6 +106,7 @@ def verify_game_map(rooms_data):
 
         # Clean the string some more (remove /n and whitespace at end)
         text_and_neighbors[j][0] = rooms_data[j][len(rooms_data[j])-1].replace('\n', '')
+        text_and_neighbors[j][2] = images_list[j]
 
     return text_and_neighbors
 
@@ -135,6 +153,7 @@ def preprocess_item_info(item_list):
     opens_list = []
     contains_list = []
     text_list = ["", "", ""]
+    image = ""
 
     for lst in inner_lists:
         if lst[0] == "opens":
@@ -147,9 +166,10 @@ def preprocess_item_info(item_list):
             text_list[1] = lst[1]
         elif lst[0] == "use":
             text_list[2] = lst[1]
+        elif lst[0] == "image":
+            image = lst[1]
 
-
-    item_details = [item_list[0], item[0].replace("<", "").replace(">",""),  text_list, grabBool, opens_list, contains_list]  # start with room id and item name
+    item_details = [item_list[0], item[0].replace("<", "").replace(">",""),  text_list, grabBool, opens_list, contains_list, image]  # start with room id and item name
 
     return item_details
 
@@ -164,7 +184,8 @@ def run_game(rooms_text_and_neighbors, characters_info, items_info, starting_roo
     for i in range(len(characters_info)):
         character_dicts[characters_info[i][0]][characters_info[i][1]] = characters[i]
 
-    items = [Item(item[1], item[2][0], item[2][1], item[2][2], item[3], item[4], item[5]) for item in items_info]
+
+    items = [Item(item[1], item[2][0], item[2][1], item[2][2], item[3], item[4], item[5], item[6]) for item in items_info]
     item_dicts = [{} for i in range(len(rooms_text_and_neighbors))]
 
     for j in range(len(items_info)):
@@ -175,7 +196,7 @@ def run_game(rooms_text_and_neighbors, characters_info, items_info, starting_roo
 
     # If no start is provided, default to room 0
 
-    rooms = [Room(i, rooms_text_and_neighbors[i][1], character_dicts[i], item_dicts[i], rooms_text_and_neighbors[i][0]) for i in range(len(rooms_text_and_neighbors))]
+    rooms = [Room(i, rooms_text_and_neighbors[i][1], character_dicts[i], item_dicts[i], rooms_text_and_neighbors[i][0], rooms_text_and_neighbors[i][2]) for i in range(len(rooms_text_and_neighbors))]
 
     game = Engine(rooms, items, characters, starting_room)
     game.run()
@@ -196,6 +217,7 @@ def main():
     parsed_data = [data for sublist in parsed_data for data in sublist]
 
     split_data = split_into_rooms(parsed_data)
+
 
     # Pull out the characters and items in our parsed data
     characters = []

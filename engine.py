@@ -16,9 +16,9 @@ class Engine():
             if checkDir != None and not self.rooms[currentRoom].blocked:
                 currentRoom = checkDir
             else:
-                print("You cannot go that way.")
+                print("You cannot go that way." + "\n")
         else:
-            print("Sorry, you can only go north, south, east, and west.")
+            print("Sorry, you can only go north, south, east, and west." + "\n")
 
         return currentRoom
     
@@ -32,7 +32,7 @@ class Engine():
             self.rooms[currentRoom].characters[character].askAbout(thing)
         else:
             # We didn't get a hit on the character, so print generic confusion text
-            print("I don't know who you're trying to talk to.")
+            print("I don't know who you're trying to talk to." + "\n")
 
     def takeItem(self, currentRoom, item):
         if item in self.rooms[currentRoom].items:
@@ -42,7 +42,7 @@ class Engine():
             # remove item from room dict 
             del self.rooms[currentRoom].items[item]
         else:
-            print("I don't see that in here.")
+            print("I don't see that in here." + "\n")
 
     def useOn(self, currentRoom, heldItem, object):
         if heldItem in [c.name for c in self.inventory] and object in self.rooms[currentRoom].items:
@@ -61,6 +61,8 @@ class Engine():
     def lookAt(self, currentRoom, object):
         if object in self.rooms[currentRoom].items:
             self.rooms[currentRoom].items[object].onLook()
+        else:
+            print("I don't see that here." + "\n")
 
 
     def printInventory(self):
@@ -69,6 +71,7 @@ class Engine():
         else:
             for item in self.inventory:
                 print(item.name.upper())
+        print("")
 
         
     
@@ -94,12 +97,17 @@ class Engine():
         while True:
             # Ask for input, parse it and change state accordingly
 
-            # Print current room's flavor text
-            print(self.rooms[currentRoom].text)
+            # Print current room's flavor text (plus image if present)
+            if self.rooms[currentRoom].image != "":
+                print(open(self.rooms[currentRoom].image).read())
+                print("")
+            print(self.rooms[currentRoom].text + "\n")
 
             # self.rooms[currentRoom].status 
 
             user_input = str(input()).split(' ')
+
+            print("")
 
             # Supported commands (so far)
             if user_input[0] == "help":
@@ -119,7 +127,7 @@ class Engine():
             elif user_input[0] == "inventory":
                 self.printInventory()
             else:
-                print("I don't understand what you're saying.")
+                print("I don't understand what you're saying." + "\n")
 
 
 
