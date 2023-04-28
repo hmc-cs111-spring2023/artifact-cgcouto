@@ -25,8 +25,13 @@
     <chest>(item, contains gold, image is chest.txt) {
         look: It's a chest.
     }
-    <gold>(item, grabbable) {
+    <gold>(item, end, grabbable) {
         look: It's very shiny!
-        pickup: Congratulations, you have found the magic treasure that makes you win the game!
+        pickup: You've found gold! Maybe you should use it on a door or something.
+        use: The door unlocks with a snap!
     }
 }
+
+<win>(end, dark is east, blocked until gold) {
+    Congratulations! That's the end.
+} 

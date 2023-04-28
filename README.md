@@ -1,6 +1,10 @@
-# Placeholder: A DSL for creating text-based adventure games
+# PyQuest: A DSL for creating text-based adventure games
 
 Hi there! This is my project for CS 121 : Domain Specific Languages at Harvey Mudd College.
+
+tldr: This is a language that lets you create simple text-based adventure games in an HTML-like syntax. 
+
+Dependencies/packages needed: pyparsing (pip install should do the trick)
 
 ## Audience and intent
 
@@ -8,7 +12,7 @@ When I first learned HTML in eighth grade, I found it super boring. A language l
 
 ## DSL overview
 
-My DSL is heavily inspired by HTML/XML with its nesting and options.
+My DSL is heavily inspired by HTML/XML with its nesting and options. 
 
 ### Rooms
 
@@ -26,8 +30,10 @@ My language has reasonable error-handling, both on the initial syntax and on gam
 
 ## How to play
 
-
+I've come to realize that the commands within the game are like a mini-DSL.
 
 ## Some examples
 
-## Future goals
+
+
+## Limitations, areas for improvement and next steps

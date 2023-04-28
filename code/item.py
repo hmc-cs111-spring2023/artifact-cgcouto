@@ -1,7 +1,6 @@
-
 class Item:
 
-    def __init__(self, name, look, pickup, use, grabBool, opens, contains, image):
+    def __init__(self, name, look, pickup, use, grabBool, opens, contains, image, end):
         self.name = name
         self.lookText = look
         self.grabbable = grabBool
@@ -11,6 +10,7 @@ class Item:
         self.opens = opens
         self.status = "test"
         self.image = image
+        self.end = end
 
     def onLook(self):
         if self.image != "":
