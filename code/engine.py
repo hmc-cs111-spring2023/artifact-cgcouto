@@ -67,37 +67,43 @@ class Engine():
             print("I don't see that in here." + "\n")
 
     # Handles using an inventory item on an object/locked door
+    # currentRoom (int) : the index of the room the player is currently in
+    # input (string) : player input, containing potential objects/doors
     def useOn(self, currentRoom, input):
         heldItem = input[1]
         object = " ".join(input[3:]) # Put the object together
         compass = ["north", "south", "east", "west"]
         doors = ["north door", "south door", "east door", "west door"]
 
-        if heldItem in [c.name for c in self.inventory]:
+        if heldItem in [c.name for c in self.inventory]: # Use on items
             if object in self.rooms[currentRoom].items:
+                # If we get a hit, use the item in inventory and delete it
                 self.inventory[[c.name for c in self.inventory].index(heldItem)].onUse()
                 self.inventory.remove(self.inventory[[c.name for c in self.inventory].index(heldItem)])
 
+                # Find the items that are contained within the opened item (if any)
                 contained_items = self.rooms[currentRoom].items[object].contains
                 for item in contained_items:
-                    # add to inventory
+                    # Add to inventory
                     self.inventory.append(self.rooms[currentRoom].items[item])
                     self.rooms[currentRoom].items[item].onTake()
 
+                    # If it's an end state, end the game
                     if self.rooms[currentRoom].items[item].end:
                         exit(-1)
-                    # remove from room
+
+                    # Remove it from the room
                     del self.rooms[currentRoom].items[item]
-            elif object in doors:
+            elif object in doors: # Use on locked doors
                 # get matching index of NSEW search, pull out room neighbor, try opens
                 checkDir = self.rooms[currentRoom].neighbors[doors.index(object)]
                 if checkDir != None:
                     result = self.rooms[checkDir].openRoom(heldItem)
                     if result != "":
-                        # print the use text for the used item
+                        # Print the use text for the used item
                         self.inventory[[c.name for c in self.inventory].index(heldItem)].onUse()
 
-                        # remove it from inventory
+                        # Remove it from inventory
                         self.inventory.remove(self.inventory[[c.name for c in self.inventory].index(heldItem)])
 
                     else:
@@ -112,7 +118,7 @@ class Engine():
             print("I don't understand what you're trying to use and what you're trying to use it on!"+"\n")
 
 
-
+    # Handles looking at a possible object in the current room
     def lookAt(self, currentRoom, input):
         object = " ".join(input) # Put the object together
         if object in self.rooms[currentRoom].items:
@@ -120,7 +126,7 @@ class Engine():
         else:
             print("I don't see that here." + "\n")
 
-
+    # Prints out the current inventory for the player
     def printInventory(self):
         items = []
         if len(self.inventory) == 0:
@@ -170,14 +176,14 @@ class Engine():
             if self.rooms[currentRoom].end:
                 break
 
-            print("> ", end="")
+            print("> ", end="") 
 
             raw_input = str(input())
             user_input = [i for i in raw_input.split(' ') if i != '']
 
             print("")
 
-            # Supported commands (so far)
+            # Search for upported commands 
             if raw_input.strip() == "help":
                 self.help_user(user_input)
             elif raw_input == "exit" or raw_input == "quit":

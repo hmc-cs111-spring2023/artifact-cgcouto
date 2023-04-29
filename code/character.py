@@ -2,7 +2,7 @@
 class Character:
     def __init__(self, responseDict):
         self.responseDict = responseDict # Dictionary of keywords and programmed responses
-        self.otherResponse = "Sorry, I don't understand." # 
+        self.otherResponse = "Sorry, I don't understand." 
 
     
     def askAbout(self, thing):

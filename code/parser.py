@@ -70,14 +70,19 @@ def split_into_rooms(data):
 # filepath (string) : The filepath to the folder containing .game and .txt files
 def preprocess_room_info(rooms_data, filepath):
 
+    # If a room is defined more than once, error out
+    room_names = [rooms_data[i][0][1:len(rooms_data[i][0])-1] for i in range(len(rooms_data))]
+    if len(room_names) != len(set(room_names)):
+        print("ERROR: A room is defined more than once!")
+        exit(-1)
+
     # Build dictionary that maps room names (strings) to their int ID's
     room_names_to_ids = {}
     for i in range(len(rooms_data)):
         room_names_to_ids[rooms_data[i][0][1:len(rooms_data[i][0])-1]] = i
 
-    # Find image data if it exists and pull it out of rooms_data
+    # Find image data and blocked if it exists and pull it out of rooms_data
     images_list = [""]*len(rooms_data)
-
     blocked_list = [[] for i in range(len(rooms_data))]
 
     for n in range(len(rooms_data)):
@@ -106,11 +111,14 @@ def preprocess_room_info(rooms_data, filepath):
 
             # Obtain the details of the room we're in and the room we're looking to move to
             current_room_id = j
+
+            # If it's not a valid room to navigate to, error out
             if parsed_direction[0] in room_names_to_ids:
                 next_room_id = room_names_to_ids[parsed_direction[0]]
             else:
                 print("ERROR: room " + str(parsed_direction[0]) + " (found in directions from room " + str(rooms_data[j][0][1:-1]) +  ") not defined.")
                 exit(-1)
+            # If the direction isn't valid, error out
             if parsed_direction[2] in compass:
                 current_direction_index = compass.index(parsed_direction[2]) 
                 next_direction_index = pairedInds[compass.index(parsed_direction[2])] 
@@ -118,6 +126,7 @@ def preprocess_room_info(rooms_data, filepath):
                 print("ERROR: direction from room " + str(rooms_data[j][0][1:-1]) + " to room " + str(parsed_direction[0]) + " is faulty.")
                 exit(-1)
 
+            # If the neighbor logic from two rooms conflicts, error out
             if (text_and_neighbors[current_room_id][1][current_direction_index] != None and text_and_neighbors[current_room_id][1][current_direction_index] != next_room_id):
                 print("ERROR: Incompatible directions between rooms " + str(rooms_data[j][0][1:-1]) + " and " + str(parsed_direction[0]))
                 exit(-1)
@@ -158,9 +167,14 @@ def find_start(rooms_data):
         start = 0
     return start
 
+# Find what rooms and items - if any - are end states
+# rooms_data (list) : info for the rooms in the game
+# items_data (list) : info for the items in the game
 def find_end(rooms_data, items_data):
     endRooms = [False for i in range(len(rooms_data))]
     endItems = [False for i in range(len(items_data))]
+
+    # Search the rooms for any end states, add to our list
     for i in range(len(rooms_data)):
         for j in range(len(rooms_data[i])):
             if rooms_data[i][j] == 'end':
@@ -169,7 +183,7 @@ def find_end(rooms_data, items_data):
             rooms_data[i].remove('end')
         finally:
             continue
-
+    # Search the items for any end states, add to our list
     for i in range(len(items_data)):
         for j in range(len(items_data[i][1])):
             if items_data[i][1][j] == 'end':
@@ -179,11 +193,12 @@ def find_end(rooms_data, items_data):
         finally:
             continue
 
+    # Return both lists packaged together
     return [endRooms, endItems]
 
 
 # Given parsed character info, build dictionaries for dialogue, return that along with room id, character key
-# character_list (list) : 
+# character_list (list) : details about every character encoded in the game files
 def preprocess_character_info(character_list):
     character_dialogue_and_info = []
 
@@ -205,11 +220,16 @@ def preprocess_character_info(character_list):
 
     return character_dialogue_and_info
 
+# Given parsed item info, pull out 
+# item_list (list) : all the processed item info
+# filepath (string) : where all the ASCII images should reside
 def preprocess_item_info(item_list, filepath):
     item_room_and_info = []
 
+    # Get all item names present in the game files
     all_items = [name[1:-1] for name in [details[0] for details in [item[1] for item in item_list]]]
 
+    # If we have defined the same item name more than once, error out
     if len(all_items) != len(set(all_items)):
         print("ERROR: An item is defined more than once!")
         exit(-1)
@@ -217,7 +237,7 @@ def preprocess_item_info(item_list, filepath):
     for i in range(len(item_list)):
         itemDetails = item_list[i][1]
 
-    # Go through each item and pull out room ID, grabbable or not, contains item or not, look/pickup/use text
+        # Go through each item and pull out room ID, grabbable or not, contains item or not, look/pickup/use text
         
         grabBool = bool('grabbable' in itemDetails)
 
@@ -248,15 +268,20 @@ def preprocess_item_info(item_list, filepath):
             elif lst[0] == "image":
                 image = filepath + str(lst[1])
 
-        item_room_and_info.append([item_list[i][0], itemDetails[0].replace("<", "").replace(">",""),  text_list, grabBool, opens_list, contains_list, image])  # start with room id and item name
+        item_room_and_info.append([item_list[i][0], itemDetails[0].replace("<", "").replace(">",""),  text_list, grabBool, opens_list, contains_list, image]) 
 
     return item_room_and_info
 
 
 # Create room objects, pass into Engine and run the game!
 # rooms_text_and_neighbors ([[string, [int]]]) : list from preprocess_room_info
+# characters_info (list) : processed data for characters
+# items_info (list) : processed data for items
+# starting_room (int) : index of starting room for game
+# ending_rooms_and_items (list) : list of lists containing indices of ending rooms and/or items 
 def run_game(rooms_text_and_neighbors, characters_info, items_info, starting_room, ending_rooms_and_items):
 
+    # Put together the character objects
     characters = [Character(character[2]) for character in characters_info]
     character_dicts = [{} for i in range(len(rooms_text_and_neighbors))]
 
@@ -267,11 +292,11 @@ def run_game(rooms_text_and_neighbors, characters_info, items_info, starting_roo
     items = [Item(items_info[i][1], items_info[i][2][0], items_info[i][2][1], items_info[i][2][2], items_info[i][3], items_info[i][4], items_info[i][5], items_info[i][6], ending_rooms_and_items[1][i]) for i in range(len(items_info))]
     item_dicts = [{} for i in range(len(rooms_text_and_neighbors))]
 
+    # Put together the item objects
     for j in range(len(items_info)):
         item_dicts[items_info[j][0]][items_info[j][1]] = items[j]
 
-    # Need to find which items are contained within another item and augment their status accordingly
-
+    # Put together the room objects
     rooms = [Room(i, rooms_text_and_neighbors[i][1], character_dicts[i], item_dicts[i], rooms_text_and_neighbors[i][0], rooms_text_and_neighbors[i][2], rooms_text_and_neighbors[i][3], ending_rooms_and_items[0][i]) for i in range(len(rooms_text_and_neighbors))]
 
     game = Engine(rooms, items, characters, starting_room)
@@ -284,9 +309,11 @@ def main():
     if len(args) == 0:
         print("ERROR: Please provide at least one file name when you run this function.")
         exit(-1)
-
+    
+    # Get the filepath to the game files (excluding the game file itself)
     filepath = (args[0].rsplit('/', 1)[0]+"/")
 
+    # Parse the data in each file
     parsed_data = []
     for file in args:
         parsed_data.append(parse_data(file).asList())
