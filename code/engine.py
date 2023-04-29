@@ -99,7 +99,6 @@ class Engine():
                 checkDir = self.rooms[currentRoom].neighbors[doors.index(object)]
                 if checkDir != None:
                     result = self.rooms[checkDir].openRoom(heldItem)
-                    print(self.rooms[checkDir].opensWith)
                     if result == heldItem:
                         # Print the use text for the used item
                         self.inventory[[c.name for c in self.inventory].index(heldItem)].onUse()
