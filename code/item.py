@@ -14,7 +14,7 @@ class Item:
 
     def onLook(self):
         if self.image != "":
-            print(open(self.image).read())
+            print(open("../examples/"+self.image).read())
             print("")
         else:
             print("miss")
@@ -30,7 +30,7 @@ class Item:
 
     
     def onUse(self):
-        print(self.useText)
+        print(self.useText + "\n")
         return self.contains
 
     

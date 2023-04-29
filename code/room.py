@@ -1,4 +1,4 @@
-# Room : Stores all the details about 
+# Room : Stores all the details about a room in the game
 class Room():
 
     def __init__(self, roomID, neighbors, characters, items, text, image, opensWith, end):
@@ -9,7 +9,7 @@ class Room():
         self.text = text # Text that prints when this room is entered/stayed in
         self.opensWith = opensWith # Item names that will make this room unblocked (allowing entry)
         self.image = image # filename for relevant ASCII image
-        self.end = end
+        self.end = end # boolean as to whether this room is an end state or not
 
     # Determines whether a given object unblocks a room!
     # object (string) : the name of the object the player is using on the door

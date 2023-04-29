@@ -1,0 +1,29 @@
+<grotto>(cave is east) {
+    The cave to the west exits to a peaceful grotto. You notice a water well at the far end of the space. Kind of odd...
+    <well>(item, contains orb, image is well.txt) {
+        look: On closer inspection, you see a hole on the top right side of the well. If that was fixed with something, maybe you could raise the bucket at the bottom!
+    }
+    <orb>(item, grabbable) {
+        use: You try to unlock the door using the orb's magic, but nothing gives. "Oh forget it", the wizard says. "Just let me do it." The wizard grabs the orb from your hands and whispers an ancient spell. Suddenly, the door shoots open, and the orb crumbles to dust.
+    }
+}
+
+<final>(dark is west, blocked until orb) {
+    You enter the treasure room. At the center is a pedestal with a glowing idol. This is what you've been searching for! 
+    <idol>(item, grabbable, end) {
+        look: It's beautiful.
+        pickup: Congratulations! You have found the treasure and won the game!
+    } 
+}
+
+<treasure>(dark is south) {
+    There's a treasure chest in here
+    <chest>(item, contains winch, image is chest.txt) {
+        look: It's a chest.
+    }
+    <winch>(item, grabbable, opens well) {
+        look: Sturdy and dependable. Who doesn't love a winch?
+        pickup: You're expecting gold, but inside the chest you find... a winch. Not the most exciting find, but maybe it'll be useful somewhere.
+        use: The winch slides into place. You turn the crank, bringing a bucket up to the surface, containing a mysterious orb. You take the orb with you.
+    }
+}

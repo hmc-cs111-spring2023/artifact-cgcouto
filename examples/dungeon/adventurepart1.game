@@ -1,0 +1,32 @@
+<dark>(start, treasure is north, cave is south, exit is west) {
+    After many years of searching, you've arrived. Countless numbers of adventurers have tried to find this dungeon, but only you have succeeded. But wait! Much to your surprise, an elderly wizard is huddled in the corner. Maybe he has something to say! There's a room to your north, and a cave opens up to the south. There's also a mysterious door to the east. To exit the dungeon (and return home), go west.
+
+    <wizard>(character) {
+        dungeon : I was here the day it was built, and the day it was cast into ruin. Take my advice and leave this place at once! You don't want to know how I got these scars!
+        scar : Oh, these are surgical scars. Botched septoplasty. 
+        scars : Oh, these are surgical scars. Botched septoplasty. 
+        well : What, do you think we drank Dasani? Everyone needs water! But it's been much harder to use without the winch.
+        winch : Oh, you found it! That'll make it a lot easier to live around here.
+        orb : Aahhhh! The orb! Don't use it, I beg you!!!!
+        door : Do not open that door, young one. I've seen the power it holds within. It is not for the faint of heart!
+    }
+}
+
+<exit>(end, image is mime.txt) {
+    This dungeon is no place for people like you! Marked by this experience, you leave your life as an adventurer and become a mime instead.
+}
+
+<cave>(dark is north) {
+    You've arrived in a dingy cave. There's a pile of S P O O K Y bones in the corner. You can go north to return to the dungeon entrance, or continue west towards an opening in the rock.
+
+    <bones>(item, image is bones.txt) {
+        look: You take a closer look at the bones, and you notice a key underneath the pile!
+    }
+
+    <key>(item, grabbable, opens chest, image is key.txt) {
+        look: While it's well-worn, this key must still unlock something!
+        pickup: Digging through the pile of bones, you grab the key and slip it into your pocket.
+        use: With a click, the key slides into the keyhole and unlocks the chest.
+    }
+}
+

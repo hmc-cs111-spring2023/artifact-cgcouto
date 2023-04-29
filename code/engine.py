@@ -20,7 +20,7 @@ class Engine():
                 if len(self.rooms[checkDir].opensWith) == 0:
                     currentRoom = checkDir
                 else:
-                    print("That way is blocked!" + "\n")
+                    print("That way is blocked, but you can unblock it somehow!" + "\n")
             else:
                 print("You cannot go that way." + "\n")
         else:
@@ -32,7 +32,8 @@ class Engine():
     # currentRoom (int) : id of the current room 
     # character (string) : character key to be checked against current room's character dict
     # thing (string) : key to be checked within character's dialogue dict, if such a character exists
-    def askabout(self, currentRoom, character, thing):
+    def askAbout(self, currentRoom, character, input):
+        thing = " ".join(input)
         if character in self.rooms[currentRoom].characters:
             # Pull out relevant character from dict, run askAbout function on it
             self.rooms[currentRoom].characters[character].askAbout(thing)
@@ -55,15 +56,17 @@ class Engine():
                 self.inventory.append(self.rooms[currentRoom].items[result])
 
             # Check whether this item is an end state, exit if it is!
-            if self.rooms[currentRoom].items[result].end:
-                exit(-1)
-
-            # Otherwise we just remove it from the room and carry on
-            del self.rooms[currentRoom].items[item]
+            try:
+                if self.rooms[currentRoom].items[result].end:
+                    exit(-1)
+            finally:
+                # Otherwise we just remove it from the room and carry on
+                del self.rooms[currentRoom].items[item]
 
         else:
             print("I don't see that in here." + "\n")
 
+    # Handles using an inventory item on an object/locked door
     def useOn(self, currentRoom, input):
         heldItem = input[1]
         object = " ".join(input[3:]) # Put the object together
@@ -75,12 +78,12 @@ class Engine():
                 self.inventory[[c.name for c in self.inventory].index(heldItem)].onUse()
                 self.inventory.remove(self.inventory[[c.name for c in self.inventory].index(heldItem)])
 
-                contained_items = self.rooms[currentRoom].items[object].onUse()
+                contained_items = self.rooms[currentRoom].items[object].contains
                 for item in contained_items:
                     # add to inventory
                     self.inventory.append(self.rooms[currentRoom].items[item])
                     self.rooms[currentRoom].items[item].onTake()
-                    print(self.rooms[currentRoom].items[item].end)
+
                     if self.rooms[currentRoom].items[item].end:
                         exit(-1)
                     # remove from room
@@ -88,23 +91,25 @@ class Engine():
             elif object in doors:
                 # get matching index of NSEW search, pull out room neighbor, try opens
                 checkDir = self.rooms[currentRoom].neighbors[doors.index(object)]
-                result = self.rooms[checkDir].openRoom(heldItem)
-                if result != "":
-                    # print the use text for the used item
-                    self.inventory[[c.name for c in self.inventory].index(heldItem)].onUse()
+                if checkDir != None:
+                    result = self.rooms[checkDir].openRoom(heldItem)
+                    if result != "":
+                        # print the use text for the used item
+                        self.inventory[[c.name for c in self.inventory].index(heldItem)].onUse()
 
-                    # remove it from inventory
-                    self.inventory.remove(self.inventory[[c.name for c in self.inventory].index(heldItem)])
+                        # remove it from inventory
+                        self.inventory.remove(self.inventory[[c.name for c in self.inventory].index(heldItem)])
 
+                    else:
+                        print("Sorry, you can't use that here.")
                 else:
-                    print("Sorry, you can't use that here.")
+                    print("That won't work here."+"\n")
             else:
                 print("I don't understand what you're trying to use that on."+"\n")
         elif object in self.rooms[currentRoom].items:
-            print("I don't understand what you're trying to use"+"\n")
+            print("I don't understand what you're trying to use."+"\n")
         else:
             print("I don't understand what you're trying to use and what you're trying to use it on!"+"\n")
-
 
 
 
@@ -117,11 +122,15 @@ class Engine():
 
 
     def printInventory(self):
+        items = []
         if len(self.inventory) == 0:
-            print("EMPTY")
+            items.append("EMPTY")
         else:
             for item in self.inventory:
-                print(item.name.upper())
+                items.append(item.name.upper())
+        print("~"*max([len(item) for item in items]))
+        [print(item) for item in items]
+        print("~"*max([len(item) for item in items]))
         print("")
 
         
@@ -136,8 +145,10 @@ class Engine():
         print("ask X about Y : where X is a character, Y is an character or object")
         print("take X : where X is an object")
         print("use X on Y : where X is an object in your inventory and Y is another object")
+        print("use X on Y door : where X is an object in your inventory and Y is a cardinal direction")
         print("look at X : where X is a character or object")
         print("inventory : returns contents of player inventory")
+        print("help : prints out a list of supported commands")
         print("exit/quit : quit the game")
         print("")
 
@@ -155,9 +166,9 @@ class Engine():
                 print("")
             print(self.rooms[currentRoom].text + "\n")
 
+            # If we've entered a room that's an end state, end the game
             if self.rooms[currentRoom].end:
                 break
-
 
             print("> ", end="")
 
@@ -174,7 +185,7 @@ class Engine():
             elif user_input[0] == "go":
                 currentRoom = self.navigate(currentRoom, user_input[1:])
             elif user_input[0] == "ask" and user_input[2] == "about":
-                self.askabout(currentRoom, user_input[1], user_input[3:])
+                self.askAbout(currentRoom, user_input[1], user_input[3:])
             elif user_input[0] == "take":
                 self.takeItem(currentRoom, user_input[1:])
             elif user_input[0] == "use" and user_input[2] == "on":

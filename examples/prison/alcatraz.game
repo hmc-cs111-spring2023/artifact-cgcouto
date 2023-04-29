@@ -1,0 +1,21 @@
+<cell>(freedom is west) {
+    It's your first day in Alcatraz. The guards usher you into your cell and slam the door shut. You notice that the cell door (on the west side of the room) has seen better days, with only one hinge still connected to the door frame. Your assigned cellmate is on the top bunk. Maybe they have something to say about that?
+
+    <cellmate>(character) {
+        jail : What do I think about this place? Could be better, could be worse. At least the views are nice.
+        alcatraz : What do I think about this place? Could be better, could be worse. At least the views are nice.
+        food : It ain't no pizza pie, that's for sure. 
+        life : How's life on this rock? Could be better, could be worse. At least the views are nice.
+        lock : Yeah, I've been chipping away at that old thing for months now. If you want to give it a go, be my guest. I've left my spoon over there.
+    }
+
+    <spoon>(item, grabbable, image is spoon.txt) {
+        look: Dull yet sturdy, it's got many uses here.
+        pickup: You grab the spoon, clutching it in your hand.
+        use: You summon all your strength to hit the door hinge with the spoon, and the hinge breaks, sending the cell gate crashing to the floor! Hopefully that wasn't too loud...
+    }
+}
+
+<freedom>(end, blocked until spoon){
+    You step outside of your cell and slink out into the darkness. Escaping this place won't be easy, but you have no choice but to try...
+}

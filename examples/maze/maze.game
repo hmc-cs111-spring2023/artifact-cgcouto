@@ -1,0 +1,18 @@
+<room1>(room2 is east) {
+    You've awoken in mysterious maze, where it's so dark you can't see a thing. You'll have to wander around in the darkness to escape!
+}
+<room2>(room1 is west, room3 is north, room4 is south) {
+    This is definitely a new room. But where to next?
+}
+<room3>(room5 is east) {
+    Can this be the way out? All you can do is try...
+}
+<room4>() {
+    Getting warmer!
+}
+<room5>(room6 is south) {
+    Is that light up ahead?
+}
+<room6>(end,) {
+    Finally, you step into the light and escape the maze! Good job! 
+}
