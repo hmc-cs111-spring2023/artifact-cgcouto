@@ -99,7 +99,8 @@ class Engine():
                 checkDir = self.rooms[currentRoom].neighbors[doors.index(object)]
                 if checkDir != None:
                     result = self.rooms[checkDir].openRoom(heldItem)
-                    if result != "":
+                    print(self.rooms[checkDir].opensWith)
+                    if result == heldItem:
                         # Print the use text for the used item
                         self.inventory[[c.name for c in self.inventory].index(heldItem)].onUse()
 
@@ -107,7 +108,7 @@ class Engine():
                         self.inventory.remove(self.inventory[[c.name for c in self.inventory].index(heldItem)])
 
                     else:
-                        print("Sorry, you can't use that here.")
+                        print("Sorry, you can't use that here."+"\n")
                 else:
                     print("That won't work here."+"\n")
             else:

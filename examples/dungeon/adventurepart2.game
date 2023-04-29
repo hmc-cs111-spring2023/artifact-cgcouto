@@ -17,7 +17,7 @@
 }
 
 <treasure>(dark is south) {
-    There's a treasure chest in here
+    Whoa, there's a treasure chest in here! What could possibly be inside?
     <chest>(item, contains winch, image is chest.txt) {
         look: It's a chest.
     }
