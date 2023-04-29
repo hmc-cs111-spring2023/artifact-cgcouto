@@ -24,7 +24,7 @@ For rooms, characters, and items, relevant text that gets printed to the termina
 
 You can also attach ASCII images (saved as txt files) to rooms and items! These images print out when a room is entered and when an item is looked at. It's important to keep all your game and txt files within the same folder so my parser can find them all!
 
-My language has basic error-handling on the DSL syntax (more on that in the limitations section) and much more robust error-handling on game logic. For example, my parser can determine when room direction logic is faulty (ex. two rooms definitions have conflicting information on how they neighbor each other, or two rooms both being north of another room). It can also provide custom error messages warning about 
+My language has basic error-handling on the DSL syntax (more on that in the limitations section) and much more robust error-handling on game logic. For example, my parser can determine when room direction logic is faulty (ex. two rooms definitions have conflicting information on how they neighbor each other, or two rooms both being north of another room). It can also provide custom error messages warning about duplicate definitions and where things that aren't defined are referenced.
 
 Finally, you can pass in multiple files at once to my parser, and it will parse them all and stitch the game together. This is a useful feature, especially for larger games.
 
